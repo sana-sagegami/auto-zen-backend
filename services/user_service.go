@@ -36,20 +36,24 @@ func (s *userService) Signup(username, password string) error {
 	return s.repo.Create(user)
 }
 
-
 func (s *userService) Login(username, password string) (string, error) {
 	user, err := s.repo.FindByUsername(username)
 	if err != nil {
 		return "", err
 	}
 
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		return "", err
+	}
+
 	// JWTトークンの発行
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
-					"user_id":	user.ID,
-					"username":	user.Username,
-					"exp":			time.Now().Add(time.Hour * 72).Unix(), // 有効期限：72時間
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id":  user.ID,
+		"username": user.Username,
+		"exp":      time.Now().Add(time.Hour * 72).Unix(), // 有効期限：72時間
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	return tokenString, err
-	}
+}
