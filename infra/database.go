@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -26,12 +27,24 @@ func InitDB() *gorm.DB {
 		os.Getenv("DB_NAME"),
 		os.Getenv("DB_PORT"),
 	)
-	
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	var db *gorm.DB
+	for i := 0; i < 10; i++ {
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err == nil {
+			break
+		}
+		fmt.Printf("DB接続待機中...(%d/10): %v\n", i+1, err)
+		time.Sleep(2 * time.Second)
+	}
 	if err != nil {
 		log.Fatal("Failed to connect to DB: ", err)
 	}
 
-	DB.AutoMigrate(&models.ZenRecord{}, &models.User{})
+	err = db.AutoMigrate(&models.ZenRecord{}, &models.User{})
+	if err != nil {
+		log.Fatal("マイグレーションに失敗しました: ", err)
+	}
+
+	DB = db
 	return DB
 }
