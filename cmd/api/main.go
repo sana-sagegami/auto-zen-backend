@@ -34,9 +34,9 @@ authorized := r.Group("/")
 authorized.Use(middlewares.AuthMiddleware())
 {
 		// ルーティング
-	r.GET("/logs", logCtrl.GetLogs)
-	r.POST("/save", logCtrl.SaveLog)
-	r.DELETE("/delete", logCtrl.DeleteLog)
+	authorized.GET("/logs", logCtrl.GetLogs)
+	authorized.POST("/save", logCtrl.SaveLog)
+	authorized.DELETE("/delete", logCtrl.DeleteLog)
 }
 	// ユーザー
 	r.POST("/signup", userCtrl.Signup)
