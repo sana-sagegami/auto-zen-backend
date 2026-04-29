@@ -40,7 +40,13 @@ func InitDB() *gorm.DB {
 		log.Fatal("Failed to connect to DB: ", err)
 	}
 
-	err = db.AutoMigrate(&models.ZenRecord{}, &models.User{})
+	err = db.AutoMigrate(
+		&models.ZenRecord{},
+		&models.User{},
+		&models.ReadinessRecord{},
+		&models.SleepRecord{},
+		&models.DailySummary{},
+	)
 	if err != nil {
 		log.Fatal("マイグレーションに失敗しました: ", err)
 	}
